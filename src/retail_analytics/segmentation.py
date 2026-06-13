@@ -60,7 +60,9 @@ def rfm_table(base: pd.DataFrame | None = None, db=None) -> pd.DataFrame:
     if base is None:
         kw = {"db_path": db} if db else {}
         base = warehouse.table("customer_rfm_base", **kw)
-    rfm = base.copy()
+    # Sort first: rank(method="first") breaks ties by row order, and SQL row order
+    # isn't guaranteed — without this, segment counts could shift between runs.
+    rfm = base.sort_values("customer_id").reset_index(drop=True)
     rfm["R"] = score_quintiles(rfm["recency_days"], higher_is_better=False)
     rfm["F"] = score_quintiles(rfm["frequency"])
     rfm["M"] = score_quintiles(rfm["monetary"])

@@ -38,12 +38,12 @@ def apply_style() -> None:
         "figure.facecolor": SURFACE,
         "axes.facecolor": SURFACE,
         "savefig.facecolor": SURFACE,
-        "font.family": ["system-ui", "Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans"],
+        "font.family": ["Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans"],
         "font.size": 10.5,
         "text.color": INK,
         "axes.labelcolor": INK_2,
         "axes.titlesize": 13,
-        "axes.titleweight": "semibold",
+        "axes.titleweight": "bold",
         "axes.titlelocation": "left",
         "axes.titlepad": 14,
         "axes.edgecolor": BASELINE,
@@ -90,6 +90,13 @@ def pct(x, _pos=None) -> str:
 
 GBP = FuncFormatter(gbp)
 PCT = FuncFormatter(pct)
+
+
+def ink_on(rgba) -> str:
+    """Pick white or ink text for a filled cell, by the fill's relative luminance."""
+    r, g, b = rgba[:3]
+    lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    return "#ffffff" if lum < 0.45 else INK
 
 
 def save(fig, path) -> None:

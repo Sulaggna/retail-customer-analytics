@@ -1,0 +1,255 @@
+{
+  "data": {
+    "raw_rows": 1067371,
+    "rows_removed_overlap": 22523,
+    "rows_removed_duplicates": 11812,
+    "overlap_revenue_double_counted_gbp": 377488.0,
+    "clean_sale_lines": 1003340,
+    "invoices": 39516,
+    "customers": 5852,
+    "products": 4894,
+    "countries": 43,
+    "guest_share_of_sales": 0.1311,
+    "cancellations_matched_share": 0.3449,
+    "date_min": "2009-12-01",
+    "date_max": "2011-12-09"
+  },
+  "warehouse_models": [
+    "01_staging",
+    "02_dim_date",
+    "03_dim_product",
+    "04_fct_order_lines",
+    "05_fct_orders",
+    "06_dim_customer",
+    "10_kpi_monthly",
+    "11_kpi_country",
+    "12_product_performance",
+    "13_cohort_retention",
+    "14_cancellations_by_country",
+    "15_customer_rfm_base",
+    "16_purchase_intervals",
+    "17_order_timing"
+  ],
+  "revenue": {
+    "net_revenue_ty2010": 9156117.0,
+    "net_revenue_ty2011": 9330919.0,
+    "net_revenue_growth": 0.0191,
+    "gross_sales_growth": 0.0251,
+    "aov_ty2010": 475.95,
+    "aov_ty2011": 508.14,
+    "orders_per_customer_ty2010": 4.292,
+    "orders_per_customer_ty2011": 4.106,
+    "active_customers_ty2010": 4239,
+    "active_customers_ty2011": 4293,
+    "cancellation_rate_ty2010": 0.0256,
+    "cancellation_rate_ty2011": 0.0313,
+    "bridge_gbp": {
+      "Active customers": 104787.0,
+      "Orders per customer": -366431.0,
+      "Average order value": 155288.0,
+      "Guest (no-ID) sales": 342442.0
+    },
+    "november_vs_avg_month": 1.83,
+    "new_customer_sales_jan_nov_2010": 1509935.0,
+    "new_customer_sales_jan_nov_2011": 697780.0,
+    "new_customer_sales_change": -0.5379,
+    "new_customers_jan_nov_2010": 3288,
+    "new_customers_jan_nov_2011": 1509,
+    "uk_share_ty2011": 0.8448,
+    "intl_growth_ty2011": 0.1413
+  },
+  "cohorts": {
+    "vintages": {
+      "2010 cohorts (Jan-Jun)": {
+        "M1": 0.1939,
+        "M3": 0.2323,
+        "M6": 0.2205
+      },
+      "2011 cohorts (Jan-Jun)": {
+        "M1": 0.2027,
+        "M3": 0.2014,
+        "M6": 0.1739
+      }
+    },
+    "established_base_m12_retention": 0.3764,
+    "new_cohort_avg_m1_retention_2010_2011": 0.2066,
+    "days_between_orders_p50_p75_p90": [
+      32.0,
+      70.0,
+      148.0
+    ]
+  },
+  "segments": {
+    "customers_segmented": 5837,
+    "summary": {
+      "Champions": {
+        "customer_share": 0.2666,
+        "revenue_share": 0.7158,
+        "median_recency_days": 18.0
+      },
+      "Loyal": {
+        "customer_share": 0.0983,
+        "revenue_share": 0.1128,
+        "median_recency_days": 93.0
+      },
+      "Potential Loyalists": {
+        "customer_share": 0.1175,
+        "revenue_share": 0.0252,
+        "median_recency_days": 25.0
+      },
+      "New & Promising": {
+        "customer_share": 0.0159,
+        "revenue_share": 0.0009,
+        "median_recency_days": 27.0
+      },
+      "Needs Attention": {
+        "customer_share": 0.085,
+        "revenue_share": 0.0191,
+        "median_recency_days": 96.0
+      },
+      "Can't Lose Them": {
+        "customer_share": 0.0188,
+        "revenue_share": 0.0419,
+        "median_recency_days": 314.0
+      },
+      "At Risk": {
+        "customer_share": 0.1467,
+        "revenue_share": 0.0604,
+        "median_recency_days": 380.0
+      },
+      "About to Sleep": {
+        "customer_share": 0.0166,
+        "revenue_share": 0.0009,
+        "median_recency_days": 107.0
+      },
+      "Hibernating / Lost": {
+        "customer_share": 0.2345,
+        "revenue_share": 0.023,
+        "median_recency_days": 436.0
+      }
+    },
+    "kmeans_best_k": 4,
+    "kmeans_silhouette": {
+      "3": 0.349,
+      "4": 0.362,
+      "5": 0.34,
+      "6": 0.332,
+      "7": 0.312,
+      "8": 0.297
+    }
+  },
+  "concentration": {
+    "top20_products_revenue_share": 0.7838,
+    "top20_customers_revenue_share": 0.7672,
+    "top1pct_customers_revenue_share": 0.3111
+  },
+  "clv": {
+    "customers": 4936,
+    "horizon_weeks": 26.1,
+    "actual_total_purchases": 7721,
+    "bgnbd_total_purchases": 7605.1069,
+    "naive_total_purchases": 13137.4646,
+    "bgnbd_mae": 1.0434,
+    "naive_mae": 1.6963,
+    "bgnbd_spearman": 0.6238,
+    "naive_spearman": 0.5617,
+    "bgnbd_value_top20_capture": 0.7605,
+    "naive_value_top20_capture": 0.7421,
+    "actual_total_value": 4311359.18,
+    "bgnbd_total_value": 3640957.8096,
+    "params_bgnbd": {
+      "r": 0.6839,
+      "alpha": 9.5465,
+      "a": 0.1481,
+      "b": 3.2033
+    },
+    "params_gamma_gamma": {
+      "p": 2.4264,
+      "q": 3.5666,
+      "v": 423.5845
+    },
+    "freq_value_corr": 0.1315,
+    "calibration_sensitivity": [
+      {
+        "calibration": "Dec-2009 \u2192 Dec-2010",
+        "holdout_weeks": 52.1,
+        "predicted / actual purchases": 1.5385,
+        "MAE (BG/NBD)": 2.5047,
+        "MAE (naive)": 5.7773,
+        "rank corr (BG/NBD)": 0.574
+      },
+      {
+        "calibration": "Dec-2009 \u2192 Mar-2011",
+        "holdout_weeks": 39.3,
+        "predicted / actual purchases": 1.1306,
+        "MAE (BG/NBD)": 1.5304,
+        "MAE (naive)": 2.9325,
+        "rank corr (BG/NBD)": 0.6074
+      },
+      {
+        "calibration": "Dec-2009 \u2192 Jun-2011",
+        "holdout_weeks": 26.1,
+        "predicted / actual purchases": 0.985,
+        "MAE (BG/NBD)": 1.0434,
+        "MAE (naive)": 1.6963,
+        "rank corr (BG/NBD)": 0.6238
+      }
+    ],
+    "predicted_12m_revenue_total": 8719183.0,
+    "predicted_12m_at_risk_plus_cant_lose": 398592.0,
+    "by_segment_gbp": {
+      "Champions": 6135169.0,
+      "Loyal": 839652.0,
+      "Potential Loyalists": 654018.0,
+      "New & Promising": 90416.0,
+      "Needs Attention": 281236.0,
+      "Can't Lose Them": 85291.0,
+      "At Risk": 313301.0,
+      "About to Sleep": 52322.0,
+      "Hibernating / Lost": 265868.0
+    }
+  },
+  "basket": {
+    "baskets": 39251,
+    "rules_support_ge_1pct": 534,
+    "median_lift": 5.88,
+    "top50_same_collection_share": 0.88,
+    "top_rule": {
+      "a": "COFFEE MUG DOG + BALL DESIGN",
+      "b": "COFFEE MUG CAT + BIRD DESIGN",
+      "lift": 45.9,
+      "confidence": 0.75
+    }
+  },
+  "forecast": {
+    "weeks": 105,
+    "scores": {
+      "ensemble": {
+        "WAPE (1-4 wk)": 0.1367,
+        "WAPE (1 wk)": 0.1431,
+        "Bias": -0.0563
+      },
+      "harmonic": {
+        "WAPE (1-4 wk)": 0.1541,
+        "WAPE (1 wk)": 0.1553,
+        "Bias": -0.0508
+      },
+      "seasonal_naive": {
+        "WAPE (1-4 wk)": 0.1557,
+        "WAPE (1 wk)": 0.1687,
+        "Bias": -0.0617
+      },
+      "drift_naive": {
+        "WAPE (1-4 wk)": 0.1876,
+        "WAPE (1 wk)": 0.1675,
+        "Bias": -0.1168
+      },
+      "ets": {
+        "WAPE (1-4 wk)": 0.1877,
+        "WAPE (1 wk)": 0.1842,
+        "Bias": -0.0847
+      }
+    },
+    "ensemble_improvement_vs_seasonal_naive": 0.1219
+  }
+}

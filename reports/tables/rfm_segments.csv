@@ -1,0 +1,10 @@
+segment,customers,revenue,median_recency_days,avg_orders,avg_revenue,customer_share,revenue_share,action
+Champions,1556,11711512.61,18.0,14.841259640102828,7526.679055269922,0.26657529552852494,0.7157932862797335,"Reward & protect: early access, referral asks, no discounts needed."
+Loyal,574,1845728.68,93.0,7.898954703832753,3215.5551916376307,0.09833818742504712,0.11280867309230987,Upsell premium ranges; loyalty tier; ask for reviews.
+Potential Loyalists,686,412577.54,25.0,2.3352769679300294,601.4249854227405,0.1175261264348124,0.025216233208821024,"Nudge the 2nd/3rd order: bundles from basket analysis, free-shipping threshold."
+New & Promising,93,14869.77,27.0,1.0,159.89000000000001,0.01593284221346582,0.000908822104280157,Onboarding series; best-seller recommendations; second-order incentive.
+Needs Attention,496,312300.64,96.0,2.2600806451612905,629.6383870967742,0.08497515847181772,0.019087432072778514,Time-limited offer on categories they already buy.
+Can't Lose Them,110,685449.7300000001,314.0,12.754545454545454,6231.361181818183,0.01884529724173377,0.041893846777513406,Personal outreach from account managers — highest revenue at stake.
+At Risk,856,988464.28,380.0,3.4731308411214954,1154.7479906542058,0.14665067671749185,0.06041372441909796,Win-back campaign before they lapse (90+ days since last order).
+About to Sleep,97,15134.300000000001,107.0,1.0,156.0237113402062,0.016618125749528867,0.0009249898534279401,"Low-cost reactivation (newsletter, seasonal catalogue)."
+Hibernating / Lost,1369,375547.33,436.0,1.2140248356464574,274.3223739956172,0.23453829021757752,0.022952992192037572,Suppress from paid channels; occasional low-cost win-back only.

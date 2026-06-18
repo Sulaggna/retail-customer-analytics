@@ -42,8 +42,10 @@ def table(name: str) -> pd.DataFrame:
 
 
 def style(fig: go.Figure, height: int = 360) -> go.Figure:
-    fig.update_layout(height=height, margin=dict(l=8, r=8, t=36, b=8), plot_bgcolor="rgba(0,0,0,0)",
-                      paper_bgcolor="rgba(0,0,0,0)", legend=dict(orientation="h", y=1.08, x=0),
+    fig.update_layout(height=height, margin=dict(l=8, r=8, t=72, b=8), plot_bgcolor="rgba(0,0,0,0)",
+                      paper_bgcolor="rgba(0,0,0,0)",
+                      legend=dict(orientation="h", y=1.01, yanchor="bottom", x=0, title_text=""),
+                      title=dict(y=0.98, yanchor="top"),
                       hoverlabel=dict(bgcolor="white"), font=dict(family="system-ui, -apple-system, sans-serif"))
     fig.update_xaxes(showgrid=False, linecolor=GRID)
     fig.update_yaxes(gridcolor=GRID, zeroline=False)

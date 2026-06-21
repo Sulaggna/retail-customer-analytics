@@ -27,6 +27,9 @@ def _step(msg: str):
     print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
 
 
+# csv floats are rounded: duckdb sums in parallel, so the last few digits
+# otherwise change from run to run
+
 def _r(x, nd=4):
     """Round for JSON, converting numpy scalars."""
     if isinstance(x, (np.floating, float)):
@@ -51,7 +54,7 @@ def run(skip_ingest: bool = False) -> dict:
     clean.to_parquet(paths.CLEAN_PARQUET, index=False)
     cleaning.render_quality_report(log, clean, paths.DOCS_DIR / "data_quality_report.md")
     audit = log.to_frame()
-    audit.to_csv(T / "data_quality_audit.csv", index=False)
+    audit.to_csv(float_format="%.4f", path_or_buf=T / "data_quality_audit.csv", index=False)
     figures.data_quality_waterfall(audit, F / "01_data_quality.png")
     sales = clean[clean["line_type"] == "sale"]
     m["data"] = {
@@ -77,11 +80,11 @@ def run(skip_ingest: bool = False) -> dict:
     # 3. Revenue -----------------------------------------------------------------
     _step("Revenue KPIs + bridge")
     kpi = warehouse.table("kpi_monthly")
-    kpi.to_csv(T / "kpi_monthly.csv", index=False)
+    kpi.to_csv(float_format="%.4f", path_or_buf=T / "kpi_monthly.csv", index=False)
     ty = revenue.trading_year_summary()
-    ty.to_csv(T / "trading_year_summary.csv")
+    ty.to_csv(float_format="%.4f", path_or_buf=T / "trading_year_summary.csv")
     bridge = revenue.revenue_bridge(ty)
-    bridge.to_csv(T / "revenue_bridge.csv")
+    bridge.to_csv(float_format="%.4f", path_or_buf=T / "revenue_bridge.csv")
     figures.monthly_revenue_yoy(kpi, F / "02_monthly_revenue.png")
     figures.revenue_bridge(bridge, ty, F / "03_revenue_bridge.png")
     figures.new_vs_returning(kpi, F / "04_new_vs_returning.png")
@@ -115,7 +118,7 @@ def run(skip_ingest: bool = False) -> dict:
     _ = new10
 
     country = warehouse.table("kpi_country")
-    country.to_csv(T / "kpi_country.csv", index=False)
+    country.to_csv(float_format="%.4f", path_or_buf=T / "kpi_country.csv", index=False)
     figures.country_dumbbell(country, F / "12_international_markets.png")
     c11 = country[country["trading_year"] == 2011]
     m["revenue"]["uk_share_ty2011"] = _r(c11.loc[c11.country == "United Kingdom", "revenue_share"].iloc[0])
@@ -130,10 +133,10 @@ def run(skip_ingest: bool = False) -> dict:
     _step("Cohorts + RFM segmentation")
     mat = cohorts.retention_matrix()
     sizes = cohorts.cohort_sizes()
-    mat.to_csv(T / "cohort_retention.csv")
+    mat.to_csv(float_format="%.4f", path_or_buf=T / "cohort_retention.csv")
     figures.cohort_heatmap(mat, sizes, F / "05_cohort_retention.png")
     vint = cohorts.compare_cohort_vintages(mat)
-    vint.to_csv(T / "cohort_vintages.csv")
+    vint.to_csv(float_format="%.4f", path_or_buf=T / "cohort_vintages.csv")
     m["cohorts"] = {
         "vintages": {i: {c: _r(v) for c, v in row.items()} for i, row in vint.iterrows()},
         "established_base_m12_retention": _r(cohorts.established_base_retention(mat)),
@@ -144,10 +147,10 @@ def run(skip_ingest: bool = False) -> dict:
 
     rfm = segmentation.rfm_table()
     seg = segmentation.segment_summary(rfm)
-    seg.to_csv(T / "rfm_segments.csv")
+    seg.to_csv(float_format="%.4f", path_or_buf=T / "rfm_segments.csv")
     figures.segment_shares(seg, F / "06_rfm_segments.png")
     km = segmentation.kmeans_check(rfm)
-    km["profile"].to_csv(T / "kmeans_profile.csv")
+    km["profile"].to_csv(float_format="%.4f", path_or_buf=T / "kmeans_profile.csv")
     m["segments"] = {
         "customers_segmented": int(len(rfm)),
         "summary": {s: {"customer_share": _r(r.customer_share), "revenue_share": _r(r.revenue_share),
@@ -157,7 +160,7 @@ def run(skip_ingest: bool = False) -> dict:
     }
 
     prod = warehouse.table("product_performance")
-    prod.head(50).to_csv(T / "top_products.csv", index=False)
+    prod.head(50).to_csv(float_format="%.4f", path_or_buf=T / "top_products.csv", index=False)
     pc = segmentation.concentration(prod.set_index("stock_code")["net_revenue"])
     cust = warehouse.query("SELECT customer_id, net_revenue FROM dim_customer").set_index("customer_id")["net_revenue"]
     cc = segmentation.concentration(cust)
@@ -172,10 +175,10 @@ def run(skip_ingest: bool = False) -> dict:
     _step("CLV: BG/NBD + Gamma-Gamma")
     tx = clv.load_transactions()
     val = clv.holdout_validation(tx)
-    val["buckets"].to_csv(T / "clv_holdout_buckets.csv")
+    val["buckets"].to_csv(float_format="%.4f", path_or_buf=T / "clv_holdout_buckets.csv")
     figures.clv_validation(val["buckets"], val["metrics"], F / "08_clv_validation.png")
     sens = clv.calibration_sensitivity(tx)
-    sens.to_csv(T / "clv_calibration_sensitivity.csv", index=False)
+    sens.to_csv(float_format="%.4f", path_or_buf=T / "clv_calibration_sensitivity.csv", index=False)
     scored = clv.predict_clv(tx)
     seg_clv = (scored.join(rfm.set_index("customer_id")["segment"], how="inner")
                .groupby("segment", observed=True)
@@ -185,7 +188,7 @@ def run(skip_ingest: bool = False) -> dict:
     # always get P(alive) = 1. Report P(alive) for repeat buyers only, where it is informative.
     repeat = scored[scored["x"] > 0].join(rfm.set_index("customer_id")["segment"], how="inner")
     seg_clv["p_alive_repeat"] = repeat.groupby("segment", observed=True)["p_alive"].median()
-    seg_clv.to_csv(T / "clv_by_segment.csv")
+    seg_clv.to_csv(float_format="%.4f", path_or_buf=T / "clv_by_segment.csv")
     figures.clv_by_segment(seg_clv, F / "09_clv_by_segment.png")
     at_risk = seg_clv.loc[["At Risk", "Can't Lose Them"], "clv_total"].sum()
     m["clv"] = {k_: (_r(v) if not isinstance(v, dict) else {kk: _r(vv) for kk, vv in v.items()})
@@ -202,7 +205,7 @@ def run(skip_ingest: bool = False) -> dict:
     n_baskets = rules.attrs["n_baskets"]
     rules = basket.dedupe_symmetric(basket.add_descriptions(rules))
     rules.attrs["n_baskets"] = n_baskets
-    rules.to_csv(T / "association_rules.csv", index=False)
+    rules.to_csv(float_format="%.4f", path_or_buf=T / "association_rules.csv", index=False)
     figures.top_rules(rules, F / "10_basket_rules.png")
     m["basket"] = {
         "baskets": int(n_baskets),
@@ -218,9 +221,9 @@ def run(skip_ingest: bool = False) -> dict:
     series = forecasting.weekly_series()
     bt = forecasting.backtest(series)
     scores = forecasting.score(bt)
-    scores.to_csv(T / "forecast_scores.csv")
+    scores.to_csv(float_format="%.4f", path_or_buf=T / "forecast_scores.csv")
     final = forecasting.final_forecast(series)
-    final.to_csv(T / "forecast_next_8_weeks.csv")
+    final.to_csv(float_format="%.4f", path_or_buf=T / "forecast_next_8_weeks.csv")
     figures.forecast(series, bt, final, scores, F / "13_forecast.png")
     m["forecast"] = {
         "weeks": int(len(series)),

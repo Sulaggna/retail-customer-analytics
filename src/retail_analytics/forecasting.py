@@ -1,9 +1,8 @@
-"""Weekly revenue forecasting with an honest, rolling-origin backtest.
+"""Weekly revenue forecasts with a rolling-origin backtest.
 
-With ~2 years of weekly data the interesting question isn't "which fancy model
-wins" but "does anything beat the obvious baselines, and by how much?". So
-every model is scored the same way: refit at each origin on data available at
-that time, forecast 1-4 weeks ahead, compare to what actually happened.
+Only ~2 years of weekly data, so the main question is whether anything beats
+the simple baselines. Every model is refit at each origin using only data
+before it and forecasts 1-4 weeks ahead.
 
 Models
     seasonal_naive   same ISO week last year

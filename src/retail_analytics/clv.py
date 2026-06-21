@@ -1,22 +1,16 @@
-"""Probabilistic customer lifetime value: BG/NBD + Gamma-Gamma, implemented from scratch.
+"""Customer lifetime value with BG/NBD + Gamma-Gamma, written with scipy.
 
-Why not just "average spend x expected lifetime"? In non-contractual retail we
-never observe churn — a customer simply stops ordering. BG/NBD models each
-customer as (1) purchasing at their own Poisson rate while alive and (2) having
-a small chance of silently "dying" after every purchase. From only three
-numbers per customer — frequency x, recency t_x and age T — it yields
-P(alive) and expected future purchases. Gamma-Gamma then models how much each
-customer spends per purchase, shrinking noisy individual averages toward the
-population mean.
+Churn isn't observed in retail, customers just stop ordering. BG/NBD assumes
+each customer buys at their own Poisson rate while active and has some chance
+of dropping out after every purchase. It only needs frequency (x), recency (t_x)
+and age (T) per customer and gives P(alive) and expected future purchases.
+Gamma-Gamma models the spend per purchase.
 
 References
     Fader, Hardie & Lee (2005). "Counting Your Customers" the Easy Way: An
         Alternative to the Pareto/NBD Model. Marketing Science 24(2).
     Fader, Hardie & Lee (2005). RFM and CLV: Using Iso-Value Curves for
         Customer Base Analysis. Journal of Marketing Research 42(4).
-
-The model is validated out-of-sample: fit on year 1, predict year 2, compare
-to what customers actually did.
 """
 
 from __future__ import annotations
@@ -52,7 +46,7 @@ def load_transactions(db=None) -> pd.DataFrame:
 def rfm_summary(tx: pd.DataFrame, observation_end, start=None) -> pd.DataFrame:
     """Per-customer (x, t_x, T, monetary) in weeks, using purchases up to ``observation_end``.
 
-    x        = number of *repeat* purchase days (first purchase not counted)
+    x        = number of repeat purchase days (first purchase not counted)
     t_x      = weeks between first and last purchase
     T        = weeks between first purchase and the end of the observation window
     monetary = mean value of the repeat purchases (Gamma-Gamma convention)
@@ -77,7 +71,7 @@ def rfm_summary(tx: pd.DataFrame, observation_end, start=None) -> pd.DataFrame:
     return out
 
 
-# ----------------------------------------------------------------------------- BG/NBD
+# BG/NBD
 @dataclass
 class BGNBD:
     r: float = 1.0
@@ -98,14 +92,12 @@ class BGNBD:
         return -ll.sum()
 
     def fit(self, x, t_x, T, penalizer: float = 1e-3) -> "BGNBD":
-        """Maximum likelihood on log-parameters.
+        """MLE on log-params.
 
-        Two safeguards, both learned the hard way on this data:
-        * bounds keep every parameter in [1e-4, 8e3]. Unbounded, the optimiser drifts
-          to a -> 0, b -> 1e15, where ``gammaln`` differences lose all precision and
-          the "likelihood" it climbs is floating-point noise;
-        * a small L2 penalty on the parameters (as in the ``lifetimes`` library)
-          stabilises the flat ridge in (a, b) that this data produces.
+        Without bounds the optimiser runs off to a -> 0, b -> ~1e15, where the
+        gammaln differences are just rounding error, so params are kept in
+        [1e-4, 8e3]. The small L2 penalty (same idea as the lifetimes package)
+        is there because the likelihood is very flat in (a, b) on this data.
         """
         x, t_x, T = (np.asarray(v, dtype=float) for v in (x, t_x, T))
 
@@ -141,7 +133,7 @@ class BGNBD:
         return num / (1.0 + self._odds_dead(x, t_x, T))
 
 
-# ----------------------------------------------------------------------------- Gamma-Gamma
+# Gamma-Gamma
 @dataclass
 class GammaGamma:
     p: float = 1.0
@@ -174,18 +166,18 @@ class GammaGamma:
 
 
 def frequency_value_correlation(summary: pd.DataFrame) -> float:
-    """Gamma-Gamma assumes spend-per-purchase is independent of purchase frequency."""
+    """Gamma-Gamma assumes spend per purchase doesn't depend on frequency, check it."""
     rep = summary[summary["x"] > 0]
     return float(np.corrcoef(rep["x"], rep["monetary"])[0, 1])
 
 
-# ----------------------------------------------------------------------------- validation
+# validation
 def holdout_validation(tx: pd.DataFrame, calibration_end="2011-06-09", holdout_end="2011-12-09") -> dict:
-    """Fit on purchases up to ``calibration_end``; predict the holdout; compare to reality.
+    """Fit on purchases up to calibration_end, predict the holdout, compare with actuals.
 
-    Default split: 18 months of calibration (Dec-2009 to Jun-2011) and a 26-week
-    holdout that includes the Q4 peak. A 12-month calibration is a trap here — see
-    ``calibration_sensitivity``.
+    Default: calibrate on Dec-2009 to Jun-2011 and hold out the next 26 weeks
+    (which includes Q4). 12 months of calibration over-forecasts a lot here, see
+    calibration_sensitivity().
     """
     cal_end, hold_end = pd.Timestamp(calibration_end), pd.Timestamp(holdout_end)
     horizon = (hold_end - cal_end).days / WEEK
@@ -202,7 +194,7 @@ def holdout_validation(tx: pd.DataFrame, calibration_end="2011-06-09", holdout_e
     df["pred_avg_value"] = gg.expected_value(df["x"], df["monetary"])
     df["pred_value"] = df["pred_purchases"] * df["pred_avg_value"]
 
-    # Naive baseline an analyst might use: "they'll keep buying at their historical rate".
+    # baseline: customer keeps buying at their historical rate
     df["naive_purchases"] = (df["x"] + 1) / df["T"].clip(lower=1) * horizon
     hist_avg = (tx[tx["purchase_date"] <= cal_end].groupby("customer_id")["value"].mean())
     df["naive_value"] = df["naive_purchases"] * hist_avg.reindex(df.index)
@@ -237,19 +229,18 @@ def holdout_validation(tx: pd.DataFrame, calibration_end="2011-06-09", holdout_e
 
 
 def calibration_sensitivity(tx: pd.DataFrame, windows=None) -> pd.DataFrame:
-    """How much history does the model need? Re-run the holdout test for several splits.
+    """Re-run the holdout test for a few calibration lengths.
 
-    With only 12 months of calibration ending in the pre-Christmas peak, customers
-    acquired in Q4 look like very frequent buyers and the model over-forecasts the
-    following year. Once the calibration covers more than one seasonal cycle the
-    bias largely disappears.
+    With 12 months ending right after the Q4 peak, customers acquired in Q4 look
+    like heavy buyers and the next year gets over-forecast. Longer calibration
+    mostly fixes it.
     """
     windows = windows or [("2010-12-09", "2011-12-09"), ("2011-03-09", "2011-12-09"), ("2011-06-09", "2011-12-09")]
     rows = []
     for cal_end, hold_end in windows:
         m = holdout_validation(tx, cal_end, hold_end)["metrics"]
         rows.append({
-            "calibration": f"Dec-2009 → {pd.Timestamp(cal_end):%b-%Y}",
+            "calibration": f"Dec-2009 to {pd.Timestamp(cal_end):%b-%Y}",
             "holdout_weeks": m["horizon_weeks"],
             "predicted / actual purchases": m["bgnbd_total_purchases"] / m["actual_total_purchases"],
             "MAE (BG/NBD)": m["bgnbd_mae"],

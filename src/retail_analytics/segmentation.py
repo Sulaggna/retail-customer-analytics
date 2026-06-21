@@ -1,8 +1,4 @@
-"""Customer segmentation: explainable RFM segments, cross-checked with k-means.
-
-RFM is what the CRM team can act on ("email the At Risk segment"); k-means is
-the data-driven check that the rule-based segments aren't arbitrary.
-"""
+"""RFM segmentation, plus k-means as a sanity check on the rule-based segments."""
 
 from __future__ import annotations
 
@@ -14,8 +10,7 @@ from sklearn.preprocessing import StandardScaler
 
 from . import warehouse
 
-# Segment rules on the (R, FM) grid, both scored 1-5. Evaluated top to bottom;
-# first match wins. Kept as data so the business can review and tweak them.
+# rules on the (R, FM) grid, both scored 1-5, first match wins
 SEGMENT_RULES: list[tuple[str, tuple[int, int], tuple[int, int]]] = [
     # name,                 R range,  FM range
     ("Champions",           (4, 5),   (4, 5)),
@@ -36,7 +31,7 @@ SEGMENT_ACTIONS = {
     "Potential Loyalists": "Nudge the 2nd/3rd order: bundles from basket analysis, free-shipping threshold.",
     "New & Promising": "Onboarding series; best-seller recommendations; second-order incentive.",
     "Needs Attention": "Time-limited offer on categories they already buy.",
-    "Can't Lose Them": "Personal outreach from account managers — highest revenue at stake.",
+    "Can't Lose Them": "Personal outreach from account managers (most revenue at stake).",
     "At Risk": "Win-back campaign before they lapse (90+ days since last order).",
     "About to Sleep": "Low-cost reactivation (newsletter, seasonal catalogue).",
     "Hibernating / Lost": "Suppress from paid channels; occasional low-cost win-back only.",
@@ -44,7 +39,7 @@ SEGMENT_ACTIONS = {
 
 
 def score_quintiles(s: pd.Series, higher_is_better: bool = True) -> pd.Series:
-    """1-5 quintile score. Ranks first so heavy ties (e.g. frequency = 1) don't break qcut."""
+    """1-5 quintile score. Uses ranks because of the ties (lots of frequency = 1)."""
     ranks = s.rank(method="first", ascending=higher_is_better)
     return pd.qcut(ranks, 5, labels=[1, 2, 3, 4, 5]).astype(int)
 
@@ -60,8 +55,8 @@ def rfm_table(base: pd.DataFrame | None = None, db=None) -> pd.DataFrame:
     if base is None:
         kw = {"db_path": db} if db else {}
         base = warehouse.table("customer_rfm_base", **kw)
-    # Sort first: rank(method="first") breaks ties by row order, and SQL row order
-    # isn't guaranteed — without this, segment counts could shift between runs.
+    # sort first so rank(method="first") breaks ties the same way every run
+    # (row order coming back from duckdb isn't fixed)
     rfm = base.sort_values("customer_id").reset_index(drop=True)
     rfm["R"] = score_quintiles(rfm["recency_days"], higher_is_better=False)
     rfm["F"] = score_quintiles(rfm["frequency"])

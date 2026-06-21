@@ -1,8 +1,4 @@
-"""Every chart in the report. Each function takes tidy inputs and writes one PNG.
-
-Titles state the *takeaway*, not the chart type ("Revenue was flat because...",
-not "Revenue by month").
-"""
+"""Report figures, one function per chart. Each writes a png to reports/figures."""
 
 from __future__ import annotations
 
@@ -25,7 +21,7 @@ def _finish(fig, ax, title, sub=None):
     fig.tight_layout()
 
 
-# ----------------------------------------------------------------------------- 1. data quality
+# 1. data quality
 def data_quality_waterfall(audit: pd.DataFrame, path) -> None:
     get = lambda step, rule=None: int(audit.loc[(audit.step == step) & ((audit.rule == rule) if rule else True), "rows"].iloc[0])  # noqa: E731
     raw = get("Raw input")
@@ -60,7 +56,7 @@ def data_quality_waterfall(audit: pd.DataFrame, path) -> None:
     P.save(fig, path)
 
 
-# ----------------------------------------------------------------------------- 2. monthly revenue
+# 2. monthly revenue
 def monthly_revenue_yoy(kpi: pd.DataFrame, path) -> None:
     k = kpi.copy()
     k["month"] = pd.to_datetime(k["month"])
@@ -84,7 +80,7 @@ def monthly_revenue_yoy(kpi: pd.DataFrame, path) -> None:
     P.save(fig, path)
 
 
-# ----------------------------------------------------------------------------- 3. revenue bridge
+# 3. revenue bridge
 def revenue_bridge(bridge: pd.DataFrame, ty: pd.DataFrame, path) -> None:
     start, end = ty.loc[2010, "gross_sales"], ty.loc[2011, "gross_sales"]
     names = ["TY2010"] + list(bridge.index) + ["TY2011"]
@@ -107,11 +103,11 @@ def revenue_bridge(bridge: pd.DataFrame, ty: pd.DataFrame, path) -> None:
     ax.yaxis.set_major_formatter(P.GBP)
     ax.grid(axis="x", visible=False)
     _finish(fig, ax, f"Sales grew {end / start - 1:.1%}, but customers ordered less often",
-            "Gross merchandise sales, TY2010 → TY2011, LMDI driver decomposition (axis does not start at 0)")
+            "Gross merchandise sales, TY2010 to TY2011, LMDI decomposition (axis doesn't start at 0)")
     P.save(fig, path)
 
 
-# ----------------------------------------------------------------------------- 4. new vs returning
+# 4. new vs returning
 def new_vs_returning(kpi: pd.DataFrame, path) -> None:
     k = kpi.copy()
     k["month"] = pd.to_datetime(k["month"])
@@ -140,7 +136,7 @@ def new_vs_returning(kpi: pd.DataFrame, path) -> None:
     P.save(fig, path)
 
 
-# ----------------------------------------------------------------------------- 5. cohort heatmap
+# 5. cohort heatmap
 def cohort_heatmap(mat: pd.DataFrame, sizes: pd.Series, path) -> None:
     m = mat.loc[(mat.index >= "2010-01-01") & (mat.index <= "2011-06-01"), list(range(1, 13))]
     fig, ax = plt.subplots(figsize=(10, 6.2))
@@ -165,7 +161,7 @@ def cohort_heatmap(mat: pd.DataFrame, sizes: pd.Series, path) -> None:
     P.save(fig, path)
 
 
-# ----------------------------------------------------------------------------- 6. RFM segments
+# 6. RFM segments
 def segment_shares(summary: pd.DataFrame, path) -> None:
     s = summary.iloc[::-1]
     y = np.arange(len(s))
@@ -188,7 +184,7 @@ def segment_shares(summary: pd.DataFrame, path) -> None:
     P.save(fig, path)
 
 
-# ----------------------------------------------------------------------------- 7. concentration
+# 7. concentration
 def concentration(products: pd.DataFrame, customers: pd.DataFrame, path) -> None:
     fig, ax = plt.subplots(figsize=(7.5, 5))
     ax.plot([0, 1], [0, 1], color=P.BASELINE, linewidth=1)
@@ -212,7 +208,7 @@ def concentration(products: pd.DataFrame, customers: pd.DataFrame, path) -> None
     P.save(fig, path)
 
 
-# ----------------------------------------------------------------------------- 8. CLV validation
+# 8. CLV validation
 def clv_validation(buckets: pd.DataFrame, metrics: dict, path) -> None:
     b = buckets.reset_index()
     fig, ax = plt.subplots(figsize=(8.5, 4.8))
@@ -222,7 +218,7 @@ def clv_validation(buckets: pd.DataFrame, metrics: dict, path) -> None:
     ax.plot(b["x_bucket"], b["naive"], color=P.SERIES[1], marker="o", markersize=6,
             markeredgecolor=P.SURFACE, markeredgewidth=1.2, label="Naive run-rate")
     ax.set_xticks(b["x_bucket"], [str(v) if v < 10 else "10+" for v in b["x_bucket"]])
-    ax.set_xlabel("Repeat purchases in calibration period (Dec-2009 → Jun-2011)")
+    ax.set_xlabel("Repeat purchases in calibration period (Dec-2009 to Jun-2011)")
     ax.set_ylabel("Avg purchases in 26-week holdout")
     ax.set_ylim(0, None)
     ax.legend(loc="upper left")
@@ -249,7 +245,7 @@ def clv_by_segment(seg_clv: pd.DataFrame, path) -> None:
     P.save(fig, path)
 
 
-# ----------------------------------------------------------------------------- 9. basket rules
+# 9. basket rules
 def top_rules(rules: pd.DataFrame, path, n: int = 12) -> None:
     r = rules.head(n).iloc[::-1]
 
@@ -266,12 +262,12 @@ def top_rules(rules: pd.DataFrame, path, n: int = 12) -> None:
     ax.set_xlim(0, r["lift"].max() * 1.25)
     ax.set_xlabel("Lift (how many times more often than chance)")
     ax.grid(axis="y", visible=False)
-    _finish(fig, ax, "Customers buy collections, not items",
+    _finish(fig, ax, "Top pairs are mostly the same design in another colour",
             f"Top product pairs by lift (support ≥ 1% of {rules.attrs.get('n_baskets', 0):,} baskets)")
     P.save(fig, path)
 
 
-# ----------------------------------------------------------------------------- 10. forecast
+# 10. forecast
 def forecast(series: pd.DataFrame, bt: pd.DataFrame, final: pd.DataFrame, scores: pd.DataFrame, path) -> None:
     hist = series.iloc[-60:]
     one = bt[(bt["model"] == "ensemble") & (bt["step"] == 1)]
@@ -294,7 +290,7 @@ def forecast(series: pd.DataFrame, bt: pd.DataFrame, final: pd.DataFrame, scores
     P.save(fig, path)
 
 
-# ----------------------------------------------------------------------------- 11. order timing
+# 11. order timing
 def order_timing(timing: pd.DataFrame, path) -> None:
     t = timing[timing["iso_dow"] != 6]  # the shop is closed on Saturdays (30 stray orders)
     grid = t.pivot_table(index="dow_name", columns="hour", values="orders", aggfunc="sum").reindex(
@@ -312,12 +308,12 @@ def order_timing(timing: pd.DataFrame, path) -> None:
     cb.ax.tick_params(colors=P.MUTED)
     cb.set_label("orders", color=P.INK_2)
     peak = t.loc[t["orders"].idxmax()]
-    _finish(fig, ax, f"Orders peak {peak.dow_name} around {int(peak.hour)}:00 — a B2B, office-hours pattern",
+    _finish(fig, ax, f"Orders peak {peak.dow_name} around {int(peak.hour)}:00, an office-hours (B2B) pattern",
             "Orders by day of week and hour (Saturday: closed)")
     P.save(fig, path)
 
 
-# ----------------------------------------------------------------------------- 12. countries
+# 12. countries
 def country_dumbbell(country: pd.DataFrame, path, n: int = 10) -> None:
     c = country[country["country"] != "United Kingdom"]
     wide = c.pivot(index="country", columns="trading_year", values="net_revenue").fillna(0)
@@ -336,5 +332,5 @@ def country_dumbbell(country: pd.DataFrame, path, n: int = 10) -> None:
     ax.legend(loc="lower right")
     ax.grid(axis="y", visible=False)
     _finish(fig, ax, "International: small but growing markets",
-            "Net revenue by country outside the UK, trading year 2010 → 2011 (top 10)")
+            "Net revenue by country outside the UK, trading year 2010 vs 2011 (top 10)")
     P.save(fig, path)

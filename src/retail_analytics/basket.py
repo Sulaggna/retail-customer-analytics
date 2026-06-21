@@ -1,8 +1,7 @@
-"""Market-basket analysis: which products are bought together?
+"""Market basket analysis (pairwise association rules).
 
-Pairwise association rules computed with one sparse matrix product instead of
-an iterative Apriori loop: with an invoice x product incidence matrix X,
-``X.T @ X`` gives every pair's co-occurrence count in a single pass.
+With X as the invoice x product 0/1 matrix, X.T @ X gives the co-occurrence
+count for every pair at once, so there's no need for an apriori loop for pairs.
 
     support(A,B)      share of baskets containing both A and B
     confidence(A->B)  P(B in basket | A in basket)
@@ -33,11 +32,11 @@ def load_baskets(db=None) -> pd.DataFrame:
 
 def pair_rules(baskets: pd.DataFrame, min_support: float = 0.01, min_confidence: float = 0.0,
                min_item_support: float | None = None) -> pd.DataFrame:
-    """All A->B rules whose pair support clears ``min_support``.
+    """All A->B rules with pair support >= min_support.
 
-    ``baskets`` has one row per (invoice, item). Items below ``min_item_support``
-    (defaults to ``min_support``) are dropped first: a pair can't be more frequent
-    than its rarer item, so this pruning is lossless (the Apriori property).
+    baskets has one row per (invoice, item). Items under min_item_support are
+    dropped first, which doesn't lose anything since a pair can't be more
+    frequent than its rarer item.
     """
     min_item_support = min_support if min_item_support is None else min_item_support
     n_baskets = baskets["invoice"].nunique()
@@ -89,9 +88,8 @@ def dedupe_symmetric(rules: pd.DataFrame) -> pd.DataFrame:
 
 
 def same_collection_share(rules: pd.DataFrame) -> float:
-    """Share of rules whose two products share a design name (e.g. PINK vs GREEN REGENCY TEACUP).
-
-    Heuristic: strip colour words and compare the remaining words."""
+    """Share of rules where both products are the same design (e.g. PINK vs GREEN REGENCY TEACUP).
+    Rough check: drop colour words and see if 2+ words still overlap."""
     colours = {"RED", "PINK", "BLUE", "GREEN", "WHITE", "BLACK", "IVORY", "CREAM", "PURPLE", "YELLOW",
                "ORANGE", "SILVER", "GOLD", "ROSES", "SPOTTY", "RETROSPOT"}
 

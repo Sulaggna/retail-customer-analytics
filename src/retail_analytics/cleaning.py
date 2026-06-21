@@ -1,13 +1,9 @@
-"""Data-quality audit and cleaning rules.
+"""Cleaning rules and audit log.
 
-Philosophy: *flag, don't delete*. Rows that are genuinely wrong (exact
-duplicates, the overlap between the two Excel sheets, unparseable records) are
-removed. Everything else is kept and labelled with a ``line_type`` so each
-downstream metric can choose what it includes — and so the choice is visible
-in SQL instead of hidden in a preprocessing script.
-
-Every rule appends an entry to an audit log (rows touched + revenue touched),
-which is rendered to ``docs/data_quality_report.md``.
+Only rows that are actually wrong get removed (sheet overlap, exact duplicates,
+unparseable rows). Everything else is kept and tagged with a line_type, so the
+SQL layer decides what counts as a sale. Each rule logs the rows and revenue it
+touched, and the log is written to docs/data_quality_report.md.
 """
 
 from __future__ import annotations
@@ -17,8 +13,8 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
-# Stock codes that are not merchandise: postage, fees, manual adjustments,
-# vouchers, test SKUs. Identified by profiling every non-numeric code.
+# non-merchandise codes (postage, fees, manual adjustments, vouchers, test skus).
+# found by going through every non-numeric stock code
 NON_PRODUCT_PATTERN = (
     r"^(?:POST|DOT|M|m|C2|C3|D|S|B|BANK CHARGES|ADJUST\d*|AMAZONFEE|CRUK|PADS"
     r"|TEST\d+|gift_\d+_\d+)$"
@@ -55,8 +51,8 @@ def _revenue(df: pd.DataFrame) -> pd.Series:
 
 
 def remove_sheet_overlap(df: pd.DataFrame, log: AuditLog) -> pd.DataFrame:
-    """The 2009-10 sheet runs to 9 Dec 2010 and the 2010-11 sheet starts on 1 Dec 2010,
-    so 1-9 Dec 2010 appears twice. A naive ``concat`` double-counts those nine days."""
+    """The 2009-10 sheet runs to 9 Dec 2010 but the 2010-11 sheet starts on 1 Dec 2010,
+    so 1-9 Dec 2010 is in the file twice."""
     is_first = df["source_sheet"].str.contains("2009")
     overlap = is_first & (df["invoice_date"] >= SHEET_BOUNDARY)
     log.record(
@@ -74,8 +70,8 @@ def drop_invalid(df: pd.DataFrame, log: AuditLog) -> pd.DataFrame:
 
 
 def drop_exact_duplicates(df: pd.DataFrame, log: AuditLog) -> pd.DataFrame:
-    """Identical line items (same invoice, product, quantity, price, timestamp, customer).
-    These are almost always double-scans; a genuine repeat would be a quantity change."""
+    """Identical line items (same invoice, product, qty, price, timestamp, customer).
+    Probably double scans, a real repeat would normally just be a bigger quantity."""
     cols = [c for c in df.columns if c != "source_sheet"]
     dup = df.duplicated(subset=cols, keep="first")
     log.record("Drop exact duplicates", "Fully identical line items within an invoice", dup.sum(),
@@ -84,7 +80,7 @@ def drop_exact_duplicates(df: pd.DataFrame, log: AuditLog) -> pd.DataFrame:
 
 
 def classify_lines(df: pd.DataFrame) -> pd.Series:
-    """Assign every row exactly one ``line_type``. Order of the rules matters."""
+    """One line_type per row. Rule order matters (first match wins)."""
     inv = df["invoice"]
     qty = df["quantity"]
     price = df["unit_price"]
@@ -103,8 +99,8 @@ def classify_lines(df: pd.DataFrame) -> pd.Series:
 
 
 def canonical_descriptions(df: pd.DataFrame) -> pd.Series:
-    """1,200+ stock codes carry several descriptions (typos, warehouse notes such as
-    'damaged', renamed items). Use the most frequent description seen on *sale* lines."""
+    """1,200+ stock codes have more than one description (typos, renamed items, notes
+    like 'damaged'). Use the most common description on sale lines."""
     sales = df[df["line_type"] == "sale"].dropna(subset=["description"])
     canon = (
         sales.groupby(["stock_code", "description"]).size()
@@ -117,10 +113,10 @@ def canonical_descriptions(df: pd.DataFrame) -> pd.Series:
 
 
 def match_cancellations(df: pd.DataFrame) -> pd.DataFrame:
-    """Link each cancellation to the most recent earlier sale of the same product, by
-    the same customer, for the same quantity. Lets us (a) flag sales that were later
-    reversed — e.g. the single 80,995-unit order cancelled 12 minutes later — and
-    (b) measure time-to-cancel. Unmatched cancellations are partial or pre-period returns."""
+    """Match each cancellation to the latest earlier sale with the same customer,
+    product and quantity. Used to flag reversed sales (e.g. the 80,995-unit order that
+    was cancelled 12 minutes later) and to get time-to-cancel. Cancellations that don't
+    match are partial returns or returns of things bought before Dec 2009."""
     df = df.copy()
     df["qty_abs"] = df["quantity"].abs().astype("int64")
     df["_row"] = np.arange(len(df))
@@ -144,7 +140,7 @@ def match_cancellations(df: pd.DataFrame) -> pd.DataFrame:
         by=["customer_id", "stock_code", "qty_abs"],
         direction="backward",
     ).dropna(subset=["sale_row"])
-    # One sale can only be reversed once: keep the earliest cancellation per sale.
+    # a sale can only be cancelled once
     matched = matched.sort_values("invoice_date").drop_duplicates("sale_row")
 
     df["was_cancelled"] = False
@@ -199,16 +195,16 @@ def clean(raw: pd.DataFrame) -> tuple[pd.DataFrame, AuditLog]:
 
 
 def render_quality_report(log: AuditLog, clean_df: pd.DataFrame, path) -> None:
-    """Write a human-readable Markdown data-quality report."""
+    """Write the audit log out as markdown."""
     audit = log.to_frame()
     lines = [
         "# Data Quality Report",
         "",
-        "_Generated by `python -m retail_analytics.pipeline` — do not edit by hand._",
+        "_Generated by `python -m retail_analytics.pipeline`, don't edit by hand._",
         "",
-        "Every cleaning rule, how many rows it touched and how much revenue (GBP, quantity × price) "
-        "those rows carry. **Removed** rows are genuinely wrong; **flagged** rows are kept with a "
-        "`line_type` so each metric decides what to include.",
+        "Each cleaning rule, the number of rows it touched and the revenue (GBP, quantity x price) "
+        "on those rows. Removed rows are errors. Flagged rows are kept with a `line_type` so each "
+        "metric can decide whether to include them.",
         "",
         "| Step | Rule | Rows | Revenue (£) | Action |",
         "|---|---|---:|---:|---|",

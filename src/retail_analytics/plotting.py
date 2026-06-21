@@ -1,9 +1,7 @@
-"""One consistent, accessible chart style for every figure in the report.
+"""Shared matplotlib style for the report figures.
 
-Colours follow a validated colour-blind-safe categorical order (never cycled),
-a single-hue blue ramp for magnitude, and blue<->red with a grey midpoint for
-diverging values. Marks are thin, grids are hairlines, and text is always ink
-(never the series colour).
+Colour-blind-safe categorical palette used in a fixed order, a single-hue blue
+ramp for sequential data and blue/red with a grey midpoint for diverging data.
 """
 
 from __future__ import annotations
@@ -72,7 +70,7 @@ def apply_style() -> None:
 
 
 def subtitle(ax, text: str) -> None:
-    """A secondary line under the title that states the takeaway."""
+    """Grey line under the title."""
     ax.text(0, 1.015, text, transform=ax.transAxes, color=INK_2, fontsize=9.5, va="bottom")
 
 
@@ -93,7 +91,7 @@ PCT = FuncFormatter(pct)
 
 
 def ink_on(rgba) -> str:
-    """Pick white or ink text for a filled cell, by the fill's relative luminance."""
+    """White or black text depending on how dark the cell is."""
     r, g, b = rgba[:3]
     lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
     return "#ffffff" if lum < 0.45 else INK

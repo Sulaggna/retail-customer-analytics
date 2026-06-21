@@ -1,13 +1,11 @@
-"""Revenue performance: trading-year KPIs and a driver-based revenue bridge.
+"""Trading-year KPIs and a revenue bridge.
 
-The bridge answers "revenue was flat — but *why*?" by splitting the change in
-identified-customer sales into three multiplicative drivers:
+Splits the change in identified-customer sales into
 
-    sales = active customers  x  orders per customer  x  average order value
+    sales = active customers x orders per customer x average order value
 
-A multiplicative identity can't be split with simple differences without an
-arbitrary leftover "interaction" term, so we use the LMDI-I (log-mean Divisia)
-method, whose driver contributions add up to the total change *exactly*.
+Plain differences on a product leave an interaction term, so this uses LMDI-I
+(log-mean Divisia index), where the contributions add up to the total change.
 """
 
 from __future__ import annotations

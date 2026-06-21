@@ -59,7 +59,7 @@ if not paths.WAREHOUSE.exists():
 st.title("Retail Customer & Revenue Analytics")
 st.caption("UCI Online Retail II · UK online gift wholesaler · Dec 2009 – Dec 2011 · 1M+ transactions")
 
-# ---------------------------------------------------------------- filters (one row, above every chart)
+# filters
 months = q("SELECT DISTINCT DATE_TRUNC('month', date_key)::DATE AS m FROM fct_orders ORDER BY 1")["m"].tolist()
 countries = q("SELECT country, SUM(revenue) r FROM fct_order_lines GROUP BY 1 ORDER BY 2 DESC")["country"].tolist()
 f1, f2, f3 = st.columns([2, 2, 1])
@@ -86,7 +86,7 @@ params: list = [start, end] + list(picked)
 
 tab_overview, tab_customers, tab_products, tab_forecast = st.tabs(["Overview", "Customers", "Products & baskets", "Forecast"])
 
-# ---------------------------------------------------------------- overview
+# overview
 with tab_overview:
     kpi = q(f"""
         SELECT SUM(revenue) AS net, SUM(revenue) FILTER (WHERE line_type='sale') AS gross,
@@ -130,7 +130,7 @@ with tab_overview:
                     labels=dict(color="orders", x="hour", y=""))
     right.plotly_chart(style(fig, 380), width="stretch")
 
-# ---------------------------------------------------------------- customers
+# customers
 with tab_customers:
     seg = table("rfm_segments").rename(columns={"Unnamed: 0": "segment"})
     l, r = st.columns([3, 2])
@@ -159,7 +159,7 @@ with tab_customers:
                  labels={"clv_total": "£", "segment": ""}, hover_data={"customers": True, "clv_mean": ":,.0f"})
     st.plotly_chart(style(fig, 380), width="stretch")
 
-# ---------------------------------------------------------------- products & baskets
+# products & baskets
 with tab_products:
     prod = q(f"""
         SELECT p.stock_code, p.description, SUM(l.revenue) AS net_revenue,
@@ -173,7 +173,7 @@ with tab_products:
     st.plotly_chart(style(fig, 640), width="stretch")
 
     rules = table("association_rules")
-    st.markdown("**Cross-sell explorer** — pick a product to see what is bought with it")
+    st.markdown("**Cross-sell explorer**: pick a product to see what's bought with it")
     names = sorted(set(rules["antecedent_name"].dropna()) | set(rules["consequent_name"].dropna()))
     choice = st.selectbox("Product", names, index=names.index("REGENCY CAKESTAND 3 TIER") if "REGENCY CAKESTAND 3 TIER" in names else 0)
     hits = rules[(rules["antecedent_name"] == choice) | (rules["consequent_name"] == choice)].copy()
@@ -182,7 +182,7 @@ with tab_products:
                  .style.format({"support": "{:.1%}", "confidence": "{:.0%}", "lift": "{:.1f}×"}),
                  hide_index=True, width="stretch")
 
-# ---------------------------------------------------------------- forecast
+# forecast
 with tab_forecast:
     scores = table("forecast_scores").rename(columns={"Unnamed: 0": "model"})
     nxt = table("forecast_next_8_weeks").rename(columns={"Unnamed: 0": "week"})
@@ -198,6 +198,6 @@ with tab_forecast:
                              hovertemplate="%{x|%d %b %Y}: £%{y:,.0f}<extra></extra>"))
     fig.update_layout(title="Weekly net revenue and the next 8 weeks")
     st.plotly_chart(style(fig, 420), width="stretch")
-    st.markdown("**Backtest** — 26 rolling origins, 1–4 weeks ahead (lower is better)")
+    st.markdown("**Backtest**: 26 rolling origins, 1-4 weeks ahead (lower is better)")
     st.dataframe(scores.style.format({c: "{:.1%}" for c in scores.columns if c != "model"}),
                  hide_index=True, width="stretch")

@@ -1,60 +1,50 @@
-# Executive Summary — Retail Customer & Revenue Analytics
+# Executive summary: retail customer & revenue analysis
 
-**Business:** UK online giftware retailer selling mostly to small wholesalers · **Period:** Dec-2009 – Dec-2011
-**Data:** 1.07M raw transaction lines → 1.00M clean sale lines, 39.5k orders, 5.9k customers, 4.9k products, 43 countries
+Business: UK online giftware retailer, mostly selling to small wholesalers
+Period: Dec 2009 to Dec 2011
+Data: 1.07M raw transaction lines (1.00M clean sale lines), 39.5k orders, 5.9k customers, 4.9k products, 43 countries
 
-## The headline
+## Main finding
 
-Revenue looks healthy: net revenue grew **+1.9%** to **£9.33M** in trading year 2011 (Dec–Nov).
-Underneath, the business is **running on its existing customers**:
+Revenue is up a little: net revenue grew 1.9% to £9.33M in trading year 2011 (Dec-Nov). But the growth comes almost entirely from existing customers.
 
-- **Acquisition has stalled.** Sales from first-time customers fell **54%** year on year
-  (Jan–Nov: £1.51M → £0.70M) and first-time customers fell from 3,288 to 1,509. Part of the
-  2010 figure is inflated by the data starting in Dec-2009, but the direction is unambiguous.
-- **Existing customers are ordering less often.** Orders per customer fell from 4.29 to 4.11,
-  a **−£366k** drag. Higher order values (+£155k), slightly more customers (+£105k) and guest
-  checkouts (+£342k) more than covered it — this year.
-- **New customers are sticking less.** Six months after their first order, 17% of 2011's
-  H1 cohorts were still ordering vs 22% for 2010's.
+- Fewer new customers. Sales to first-time customers fell 54% year on year (Jan-Nov: £1.51M to £0.70M), and the number of first-time customers fell from 3,288 to 1,509. The 2010 figure is somewhat inflated because the data only starts in Dec 2009, but the decline is clear.
+- Existing customers order less often. Orders per customer went from 4.29 to 4.11, which cost about £366k. Larger orders (+£155k), slightly more customers (+£105k) and guest checkouts (+£342k) made up for it this year.
+- New customers stay less. Six months after their first order, 17% of the H1 2011 cohorts were still ordering, compared with 22% for H1 2010.
 
-## What the data says about customers
+## Customers
 
-| Finding | Number |
+| | |
 |---|---|
-| Revenue concentration | Top 20% of customers = **77%** of revenue; top 1% = **31%** |
-| Champions (RFM) | **27%** of customers, **72%** of revenue, last order a median 18 days ago |
-| At Risk + Can't Lose Them | 966 customers, **£1.67M** lifetime revenue, **£399k** predicted next-12-month revenue |
-| Typical gap between orders | median **32 days**; 75% of repeat orders within **70 days** |
-| Predicted next-12-month revenue | **£8.72M** (BG/NBD + Gamma-Gamma CLV model) |
+| Revenue concentration | Top 20% of customers = 77% of revenue, top 1% = 31% |
+| Champions (RFM) | 27% of customers, 72% of revenue, median 18 days since last order |
+| At Risk + Can't Lose Them | 966 customers, £1.67M spent to date, £399k predicted revenue over the next 12 months |
+| Time between orders | Median 32 days; 75% of repeat orders come within 70 days |
+| Predicted revenue, next 12 months | £8.72M (BG/NBD + Gamma-Gamma model) |
 
-The CLV model was validated out-of-sample: fitted on Dec-2009–Jun-2011, it predicted
-7,605 purchases in the following 26 weeks against 7,721 actual (**−1.5%**), with 38% lower
-per-customer error than a run-rate baseline.
+I tested the lifetime value model on data it hadn't seen. It was fitted on Dec 2009 to Jun 2011 and predicted 7,605 purchases for the next 26 weeks. The actual number was 7,721 (1.5% off). Its per-customer error was 38% lower than simply extending each customer's past rate.
 
-## What the data says about products and operations
+## Products and operations
 
-- **Customers buy collections, not items.** 88% of the 50 strongest product associations are
-  sibling designs (e.g. the three *Poppy's Playhouse* rooms: 79–84% of buyers of one buy
-  another; lift 42–46×).
-- **Revenue is concentrated in a narrow range:** the top 20% of SKUs drive 78% of revenue.
-- **Q4 dominates:** November alone is **1.8×** an average month. A weekly forecast backtested at
-  **13.7% error** (12% better than "same week last year") is ready for stock and staffing plans.
-- **Cancellations are creeping up:** 2.6% → 3.1% of gross sales; Spain runs at 13%.
-- **13% of sales have no customer ID**, so they are invisible to CRM.
+- Customers buy sets. 88% of the 50 strongest product pairs are the same design in a different colour or variant. For example, 79-84% of people who buy one Poppy's Playhouse room also buy another (lift 42-46).
+- 20% of products make up 78% of revenue.
+- November alone is 1.8x an average month. The weekly forecast has a backtested error of 13.7%, 12% better than using the same week last year, so it's good enough for stock and staffing plans.
+- Cancellations went up from 2.6% to 3.1% of gross sales. For Spain it's 13%.
+- 13% of sales have no customer ID, so those customers can't be included in any customer analysis or targeting.
 
 ## Recommendations
 
-| # | Action | Why | How to measure |
+| # | Action | Why | How to measure it |
 |---|---|---|---|
-| 1 | **Make new-customer acquisition a tracked KPI** and investigate what changed in 2011 (channels, spend, catalogue) | First-time sales halved; the base is ageing | Monthly new customers and their M1/M3 retention |
-| 2 | **Second-order programme** — triggered email at day 30, offer at day 60 | Only ~21% of new customers return in month 1; median re-order gap is 32 days | M1 retention of treated vs control cohorts (A/B test) |
-| 3 | **Account-manager outreach to the 110 "Can't Lose Them" customers** | £6.2k average lifetime spend each; repeat buyers' median P(alive) is just 38% | Reactivation rate within 90 days |
-| 4 | **"Complete the collection" recommendations and bundle pricing** | Top sibling-design pairs show 34–46× lift and 62–84% confidence | Attach rate and AOV on recommended pairs |
-| 5 | **Use the weekly forecast for Q4 stock and staffing**; schedule campaigns for Tue–Thu late mornings | Nov is 1.8× average; orders peak Wed ~12:00 | Forecast WAPE; stock-outs in Q4 |
-| 6 | **Root-cause cancellations in Spain and capture an ID on guest orders** | 13% cancellation rate; 13% of sales unattributable | Cancellation rate; share of sales with a customer ID |
+| 1 | Make new-customer acquisition a tracked KPI and find out what changed in 2011 (channels, spend, range) | First-time sales halved | Monthly new customers and their month-1 and month-3 retention |
+| 2 | Second-order campaign: reminder at day 30, offer at day 60 | Only ~21% of new customers come back in month 1, and the median gap between orders is 32 days | Month-1 retention, test group vs control (A/B test) |
+| 3 | Account managers contact the 110 "Can't Lose Them" customers | They've spent £6.2k each on average, and the median repeat buyer in this group has a 38% chance of still being active | Share reactivated within 90 days |
+| 4 | "Complete the set" recommendations and bundle pricing | The top design-sibling pairs have lift of 34-46 and confidence of 62-84% | Attach rate and order value on recommended pairs |
+| 5 | Plan Q4 stock and staffing with the weekly forecast; run campaigns Tue-Thu late morning | November is 1.8x an average month; orders peak Wednesday around 12:00 | Forecast error, Q4 stock-outs |
+| 6 | Look into Spanish cancellations and capture an ID on guest orders | 13% cancellation rate in Spain; 13% of sales can't be linked to a customer | Cancellation rate; share of sales with a customer ID |
 
 ## Caveats
 
-- 2010 "new customer" figures are inflated by left-censoring (no history before Dec-2009).
-- Revenue is GBP at invoice prices; no cost data, so CLV is revenue-, not margin-based.
-- Basket rules are correlational: they say what is bought together, not what a recommendation would cause.
+- 2010 new-customer numbers are inflated because there's no history before Dec 2009.
+- All values are revenue at invoice prices. There's no cost data, so lifetime value is revenue, not profit.
+- Basket rules show what gets bought together. They don't show what a recommendation would cause.

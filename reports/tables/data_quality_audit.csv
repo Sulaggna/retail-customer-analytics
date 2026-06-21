@@ -1,14 +1,14 @@
 step,rule,rows,revenue_gbp,action
-Raw input,Both sheets of online_retail_II.xlsx stacked,1067371,19287250.568,loaded
-Remove sheet overlap,Rows dated >= 2010-12-01 in the 2009-2010 sheet (duplicated in the 2010-2011 sheet),22523,377488.45,removed
-Drop unparseable,Missing date / quantity / price / stock code,0,0.0,removed
-Drop exact duplicates,Fully identical line items within an invoice,11812,54228.42,removed
-Classify,line_type = sale,1003340,19643861.62,flagged
-Classify,line_type = cancellation,17914,-716425.97,flagged
-Classify,line_type = non_product,5813,75712.12800000001,flagged
-Classify,line_type = stock_adjustment,3392,0.0,flagged
-Classify,line_type = bad_debt_adjustment,6,-147614.08,flagged
-Classify,line_type = zero_price,2571,0.0,flagged
-Classify,line_type = invalid,0,0.0,flagged
-Match cancellations,"Cancellation linked to its originating sale (same customer, SKU, qty)",6179,601508.3700000001,flagged
-Guest checkouts,"Sale lines with no Customer ID (kept for revenue, excluded from customer analytics)",226761,2575278.9,flagged
+Raw input,Both sheets of online_retail_II.xlsx stacked,1067371,19287250.5680,loaded
+Remove sheet overlap,Rows dated >= 2010-12-01 in the 2009-2010 sheet (duplicated in the 2010-2011 sheet),22523,377488.4500,removed
+Drop unparseable,Missing date / quantity / price / stock code,0,0.0000,removed
+Drop exact duplicates,Fully identical line items within an invoice,11812,54228.4200,removed
+Classify,line_type = sale,1003340,19643861.6200,flagged
+Classify,line_type = cancellation,17914,-716425.9700,flagged
+Classify,line_type = non_product,5813,75712.1280,flagged
+Classify,line_type = stock_adjustment,3392,0.0000,flagged
+Classify,line_type = bad_debt_adjustment,6,-147614.0800,flagged
+Classify,line_type = zero_price,2571,0.0000,flagged
+Classify,line_type = invalid,0,0.0000,flagged
+Match cancellations,"Cancellation linked to its originating sale (same customer, SKU, qty)",6179,601508.3700,flagged
+Guest checkouts,"Sale lines with no Customer ID (kept for revenue, excluded from customer analytics)",226761,2575278.9000,flagged

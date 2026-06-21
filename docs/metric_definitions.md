@@ -1,7 +1,7 @@
-# Metric Definitions
+# Metric definitions
 
-One definition per metric, used identically in SQL, Python and the dashboard. Where a
-definition involves a judgement call, the reason is given.
+These are used the same way in the SQL, the Python code and the dashboard. Where a definition
+needed a judgement call I've noted why.
 
 ## Revenue
 
@@ -53,11 +53,11 @@ For products A and B over N baskets (sale invoices, fully cancelled orders exclu
 
 - **support(A,B)** = baskets containing both ÷ N
 - **confidence(A→B)** = support(A,B) ÷ support(A)
-- **lift(A→B)** = confidence(A→B) ÷ support(B) — how many times more often than if purchases were independent
+- **lift(A→B)** = confidence(A→B) ÷ support(B), i.e. how many times more often they're bought together than if purchases were independent
 - **leverage** = support(A,B) − support(A)·support(B)
 
 ## Forecasting
 
-- **WAPE** = Σ|forecast − actual| ÷ Σ actual — robust to the near-zero Christmas closure weeks that break MAPE.
-- **Bias** = Σ(forecast − actual) ÷ Σ actual — negative means under-forecasting.
+- **WAPE** = Σ|forecast − actual| ÷ Σ actual. Used instead of MAPE because the Christmas closure weeks are close to zero and MAPE blows up on them.
+- **Bias** = Σ(forecast − actual) ÷ Σ actual. Negative means under-forecasting.
 - **Rolling-origin backtest**: each of the last 26 weeks is used as a forecast origin; models are refit on data before the origin and forecast 1–4 weeks ahead.

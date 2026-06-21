@@ -171,7 +171,7 @@
     "freq_value_corr": 0.1315,
     "calibration_sensitivity": [
       {
-        "calibration": "Dec-2009 \u2192 Dec-2010",
+        "calibration": "Dec-2009 to Dec-2010",
         "holdout_weeks": 52.1,
         "predicted / actual purchases": 1.5385,
         "MAE (BG/NBD)": 2.5047,
@@ -179,7 +179,7 @@
         "rank corr (BG/NBD)": 0.574
       },
       {
-        "calibration": "Dec-2009 \u2192 Mar-2011",
+        "calibration": "Dec-2009 to Mar-2011",
         "holdout_weeks": 39.3,
         "predicted / actual purchases": 1.1306,
         "MAE (BG/NBD)": 1.5304,
@@ -187,7 +187,7 @@
         "rank corr (BG/NBD)": 0.6074
       },
       {
-        "calibration": "Dec-2009 \u2192 Jun-2011",
+        "calibration": "Dec-2009 to Jun-2011",
         "holdout_weeks": 26.1,
         "predicted / actual purchases": 0.985,
         "MAE (BG/NBD)": 1.0434,

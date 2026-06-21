@@ -2,7 +2,7 @@
 
 ## Source
 
-**UCI Online Retail II** — Chen, D. (2019). UCI Machine Learning Repository.
+UCI Online Retail II, Chen, D. (2019). UCI Machine Learning Repository.
 <https://doi.org/10.24432/C5CG6D> · licence CC BY 4.0.
 
 All transactions of a UK-based, registered non-store online retailer of all-occasion
@@ -24,7 +24,7 @@ ships as one Excel workbook with two sheets (2009-2010, 2010-2011).
 
 Built by the SQL files in [`sql/`](../sql), in filename order.
 
-### `stg_transactions` — every cleaned row, flagged
+### `stg_transactions` (every cleaned row, with flags)
 
 | Column | Description |
 |---|---|
